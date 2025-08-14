@@ -35,11 +35,13 @@ jobs:
           kubectl get ns "$NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$NAMESPACE"
       - name: Deploy manifests
         run: |
+          kubectl -n "$NAMESPACE" apply -f ./kubernetes/redis-deployment.yaml
           kubectl -n "$NAMESPACE" apply -f ./kubernetes/backend-deployment.yaml
           kubectl -n "$NAMESPACE" apply -f ./kubernetes/frontend-deployment.yaml
       - name: Verify rollout
         run: |
           kubectl -n "$NAMESPACE" get deployments
+          kubectl -n "$NAMESPACE" rollout status deploy/redis --timeout=180s
           kubectl -n "$NAMESPACE" rollout status deploy/backend --timeout=180s
           kubectl -n "$NAMESPACE" rollout status deploy/frontend --timeout=180s
   smoke_test:
