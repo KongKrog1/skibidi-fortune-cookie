@@ -1,0 +1,32 @@
+name: deployment
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  kubernetes:
+    # Avoid exposing secrets to PRs from forks
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Write kubeconfig from secret
+        run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+
+      # ⬇️ Replace these with your real kubectl commands
+      - name: Deploy manifests
+        run: |
+          kubectl --kubeconfig kubeconfig apply -f backend-deployment.yaml
+          kubectl --kubeconfig kubeconfig apply -f frontend-deployment.yaml
+
+      - name: Verify rollout
+        run: kubectl --kubeconfig kubeconfig rollout status deploy/myapp --timeout=120s
