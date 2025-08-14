@@ -4,10 +4,10 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o backend .
+RUN go build -o backend ./...
 
 # Stage 2: Runtime
 WORKDIR /app
-COPY --from=builder /app/backend /app/backend
+COPY --from=builder /app/backend .   # copy binary only
 EXPOSE 9000
-CMD ["/app/backend"]
+CMD ["./backend"]
