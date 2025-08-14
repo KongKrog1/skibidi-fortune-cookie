@@ -42,3 +42,40 @@ jobs:
           kubectl -n "$NAMESPACE" get deployments
           kubectl -n "$NAMESPACE" rollout status deploy/backend --timeout=180s
           kubectl -n "$NAMESPACE" rollout status deploy/frontend --timeout=180s
+  smoke_test:
+    runs-on: ubuntu-latest
+    env:
+      NAMESPACE: student-10
+      FRONTEND_SVC: frontend
+      BACKEND_SVC: backend
+      FRONT_LOCAL: 8080
+      BACK_LOCAL: 9000
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+      - name: Smoke Test
+        run: |
+          set -euo pipefail
+
+          FRONT_PORT=$(kubectl -n "$NAMESPACE" get svc "$FRONTEND_SVC" -o jsonpath='{.spec.ports[0].port}')
+          BACK_PORT=$(kubectl -n "$NAMESPACE" get svc "$BACKEND_SVC" -o jsonpath='{.spec.ports[0].port}')
+
+          kubectl -n "$NAMESPACE" port-forward svc/"$FRONTEND_SVC" "$FRONT_LOCAL":"$FRONT_PORT" >/tmp/pf-frontend.log 2>&1 &
+          PF1=$!
+          kubectl -n "$NAMESPACE" port-forward svc/"$BACKEND_SVC" "$BACK_LOCAL":"$BACK_PORT" >/tmp/pf-backend.log 2>&1 &
+          PF2=$!
+
+          cleanup() { kill "$PF1" "$PF2" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+
+          sleep 5 # give port-forward time to start
+
+          curl -fsS -m 10 "http://16.170.141.214:30901"
+
+          echo "Success: both endpoints reachable!"
