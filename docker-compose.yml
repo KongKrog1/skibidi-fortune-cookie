@@ -1,24 +1,47 @@
-version: "3.9"
 services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "8080:8080"    # expose frontend to host
-    depends_on:
-      - backend
-    environment:
-      BACKEND_DNS: backend
-      BACKEND_PORT: "9000"
-    networks:
-      - appnet
+  redis:
+    image: redis:8.2
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks: [appnet]
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
 
   backend:
     build: ./backend
+    environment:
+      REDIS_DNS: redis
+      PORT: "9000"
     ports:
-      - "9000:9000"    # expose backend inside docker
-    networks:
-      - appnet
+      - "9000:9000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [appnet]
+
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_DNS: backend
+      BACKEND_PORT: "9000"
+      BACKEND_BASE_URL: http://backend:9000
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks: [appnet]
 
 networks:
   appnet:
     driver: bridge
+
+volumes:
+  redis-data:

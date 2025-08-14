@@ -16,6 +16,9 @@ spec:
       containers:
         - name: backend
           image: ghcr.io/kongkrog1/skibidi-fortune-cookie-backend:latest
+          env:
+            - name: REDIS_DNS
+              value: "redis"
           ports:
             - containerPort: 9000
 ---
