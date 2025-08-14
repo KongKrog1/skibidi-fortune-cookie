@@ -79,3 +79,12 @@ jobs:
           curl -fsS -m 10 "http://16.170.141.214:30901"
 
           echo "Success: both endpoints reachable!"
+
+      - name: Stress test frontend
+        run: |
+          docker run --rm rufus/siege-engine siege -c25 -t30s http://16.170.141.214:30901
+
+      - name: Deploy Helm charts
+        run: |
+          helm upgrade --install backend ./charts/backend -n "$NAMESPACE"
+          helm upgrade --install frontend ./charts/frontend -n "$NAMESPACE"
