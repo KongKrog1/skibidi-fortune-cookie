@@ -2,7 +2,10 @@ name: Release
 
 on:
   push:
-    tags: ["v*.*.*"]
+    branches: [ "main" ]
+
+env:
+  OWNER: kongkrog1
 
 jobs:
   build-and-push:
@@ -25,8 +28,8 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: |
-           ghcr.io/${{ github.repository_owner }}/skibidi-fortune-cookie-backend:${{ github.ref_name }}
-           ghcr.io/${{ github.repository_owner }}/skibidi-fortune-cookie-backend:latest
+           ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-backend:${{ github.ref_name }}
+           ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-backend:latest
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
@@ -34,5 +37,5 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: |
-           ghcr.io/${{ github.repository_owner }}/skibidi-fortune-cookie-frontend:${{ github.ref_name }}
-           ghcr.io/${{ github.repository_owner }}/skibidi-fortune-cookie-frontend:latest
+           ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-frontend:${{ github.ref_name }}
+           ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-frontend:latest
