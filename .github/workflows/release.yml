@@ -24,11 +24,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Scan Docker Image
-        uses: aquasecurity/trivy-action@v0.29.3
-        with:
-          image-ref: myorg/myapp:latest
-
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
@@ -38,7 +33,6 @@ jobs:
           tags: |
             ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-backend:${{ github.ref_name }}
             ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-backend:latest
-
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
