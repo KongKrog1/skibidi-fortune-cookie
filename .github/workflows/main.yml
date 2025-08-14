@@ -2,32 +2,74 @@ name: Go CI
 
 on:
   pull_request:
-    branches: [ "main" ]  # Run CI on PRs targeting main
+    branches: [ "main" ]
   push:
-    branches: [ "main" ]  # Optional: also run CI on direct pushes to main
+    branches: [ "main" ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: "1.16" 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
 
+      # Frontend
+      - name: Download frontend dependencies
+        working-directory: ./frontend
+        run: go mod download
 
+      - name: Build frontend
+        working-directory: ./frontend
+        run: go build -v .
+
+      - name: Test frontend
+        working-directory: ./frontend
+        run: go test -v ./...
+
+      # Backend
+      - name: Download backend dependencies
+        working-directory: ./backend
+        run: go mod download
+
+      - name: Build backend
+        working-directory: ./backend
+        run: go build -v .
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
     - name: Build frontend
-      run: go build -v ../../frontend
+      run: |
+        cd ..
+        cd ..
+        cd /frontend
+        go build
 
       
     - name: Build backend
-      run: go build -v ../../backend
+      run: |
+        cd ..
+        cd ..
+        cd /backend
+        go build
       
     - name: Run tests
       run: go test -v ./...
+=======
+>>>>>>> 3709a90 (cooked)
+=======
+      # 7. Run backend tests
+      - name: Test backend
+        run: go test -v ./backend/...
+>>>>>>> 3bcc3f2 (Update main.yml)
+=======
+      - name: Test backend
+        working-directory: ./backend
+        run: go test -v ./...
+>>>>>>> a19fa84 (Update main.yml)
