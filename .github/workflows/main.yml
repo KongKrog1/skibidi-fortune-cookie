@@ -2,50 +2,41 @@ name: Go CI
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ] # Kør CI på PRs mod main
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] # Valgfrit: også kør på direkte pushes til main
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout koden
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Use the Go version declared in the frontend go.mod (change path if needed)
+      # 2. Sæt Go op
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: skibidi-fortune-cookie/frontend/go.mod
-          cache: true
+          go-version: "1.22" # Skift til din Go-version
 
+      # 3. Download dependencies (fra repo-roden)
+      - name: Download dependencies
+        run: go mod download
+
+      # 4. Build frontend
       - name: Build frontend
-        working-directory: skibidi-fortune-cookie/frontend
-        run: go build -v ./...
+        run: go build -v ./frontend
 
+      # 5. Build backend
+      - name: Build backend
+        run: go build -v ./backend
+
+      # 6. Run frontend tests
       - name: Test frontend
-        working-directory: skibidi-fortune-cookie/frontend
-        run: go test -v ./...
+        run: go test -v ./frontend/...
 
-      # Build backend only if it is a separate module (has its own go.mod)
-      - name: Build backend (if module exists)
-        working-directory: skibidi-fortune-cookie/backend
-        run: |
-          if [ -f go.mod ]; then
-            go build -v ./...
-          else
-            echo "No go.mod in skibidi/backend; skipping backend build."
-          fi
-
-      - name: Test backend (if module exists)
-        working-directory: skibidi-fortune-cookie/backend
-        run: |
-          if [ -f go.mod ]; then
-            go test -v ./...
-          else
-            echo "No go.mod in skibidi/backend; skipping backend tests."
-          fi
-
-
+      # 7. Run backend tests
+      - name: Test backend
+        run: go test -v ./backend/...
