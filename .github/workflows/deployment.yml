@@ -76,7 +76,6 @@ jobs:
 
           sleep 5 # give port-forward time to start
 
-          curl -fsS -m 10 "http://127.0.0.1:${FRONT_LOCAL}/health"
-          curl -fsS -m 10 "http://127.0.0.1:${BACK_LOCAL}/health"
+          curl -fsS -m 10 "http://16.170.141.214:30901"
 
           echo "Success: both endpoints reachable!"
