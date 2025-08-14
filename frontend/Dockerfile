@@ -5,9 +5,6 @@ WORKDIR /app
 COPY . .
 RUN go build -o frontend .
 
-# Final runtime image
-FROM gcr.io/distroless/base-debian12
-
 WORKDIR /app
 COPY --from=builder /app/frontend . 
 COPY --from=builder /app/static ./static  

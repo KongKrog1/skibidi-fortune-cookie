@@ -8,9 +8,6 @@ RUN go mod download
 COPY . .
 RUN go build -o backend .
 
-# Final runtime image
-FROM gcr.io/distroless/base-debian12
-
 WORKDIR /app
 COPY --from=builder /app/backend .
 
