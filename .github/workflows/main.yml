@@ -23,6 +23,7 @@ jobs:
 
 
     - name: Build frontend
+<<<<<<< HEAD
     - run: |
         cd ..
         cd ..
@@ -36,6 +37,13 @@ jobs:
         cd ..
         cd backend
         go build
+=======
+      run: go build -v ../frontend
+
+      
+    - name: Build backend
+      run: go build -v ../backend
+>>>>>>> refs/remotes/origin/main
       
     - name: Run tests
       run: go test -v ./...
