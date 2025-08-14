@@ -52,23 +52,8 @@ jobs:
       FRONT_LOCAL: 8080
       BACK_LOCAL: 9000
     steps:
-      - name: Smoke Test
+      - name: Smoke Test in-cluster
         run: |
-          set -euo pipefail
-
-          FRONT_PORT=$(kubectl -n "$NAMESPACE" get svc "$FRONTEND_SVC" -o jsonpath='{.spec.ports[0].port}')
-          BACK_PORT=$(kubectl -n "$NAMESPACE" get svc "$BACKEND_SVC" -o jsonpath='{.spec.ports[0].port}')
-
-          kubectl -n "$NAMESPACE" port-forward svc/"$FRONTEND_SVC" "$FRONT_LOCAL":"$FRONT_PORT" >/tmp/pf-frontend.log 2>&1 &
-          PF1=$!
-          kubectl -n "$NAMESPACE" port-forward svc/"$BACKEND_SVC" "$BACK_LOCAL":"$BACK_PORT" >/tmp/pf-backend.log 2>&1 &
-          PF2=$!
-
-          cleanup() { kill "$PF1" "$PF2" >/dev/null 2>&1 || true; }
-          trap cleanup EXIT
-
-          sleep 2
-
-          curl -fsS -m 10 "http://127.0.0.1:${FRONT_LOCAL}/health"
-          curl -fsS -m 10 "http://127.0.0.1:${BACK_LOCAL}/health"
-          echo "Success, both endpoints OK"
+          kubectl -n "$NAMESPACE" run smoke-test --rm -it \
+            --image=curlimages/curl --restart=Never -- \
+            sh -c "curl -fsS http://$BACKEND_SVC:9000/health && curl -fsS http://$FRONTEND_SVC:8080/health"
