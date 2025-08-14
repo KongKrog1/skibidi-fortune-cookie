@@ -2,9 +2,9 @@ name: Go CI
 
 on:
   pull_request:
-    branches: [ "main" ]  # Run CI on PRs targeting main
+    branches: [ "main" ]
   push:
-    branches: [ "main" ]  # Optional: also run CI on direct pushes to main
+    branches: [ "main" ] 
 
 jobs:
   build-and-test:
@@ -23,7 +23,7 @@ jobs:
 
 
     - name: Build frontend
-    - run: |
+      run: |
         cd ..
         cd ..
         cd frontend
@@ -31,7 +31,7 @@ jobs:
 
       
     - name: Build backend
-    - run: |
+      run: |
         cd ..
         cd ..
         cd backend
