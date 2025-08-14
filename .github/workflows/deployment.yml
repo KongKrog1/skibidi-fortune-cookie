@@ -88,5 +88,5 @@ jobs:
 
       - name: Deploy Helm charts
         run: |
-          helm upgrade --install backend ./charts/backend -n "$NAMESPACE"
-          helm upgrade --install frontend ./charts/frontend -n "$NAMESPACE"
+          helm upgrade --install backend ./backend -n "$NAMESPACE"
+          helm upgrade --install frontend ./frontend -n "$NAMESPACE"
