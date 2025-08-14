@@ -24,8 +24,8 @@ jobs:
       # ⬇️ Replace these with your real kubectl commands
       - name: Deploy manifests
         run: |
-          kubectl --kubeconfig kubeconfig apply -f backend-deployment.yaml
-          kubectl --kubeconfig kubeconfig apply -f frontend-deployment.yaml
+          kubectl --kubeconfig kubeconfig apply -f ./kubernetes/backend-deployment.yaml
+          kubectl --kubeconfig kubeconfig apply -f ./kubernetes/frontend-deployment.yaml
 
       - name: Verify rollout
         run: kubectl --kubeconfig kubeconfig rollout status deploy/myapp --timeout=120s
