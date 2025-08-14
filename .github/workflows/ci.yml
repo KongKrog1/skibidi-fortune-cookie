@@ -41,18 +41,9 @@ jobs:
         working-directory: ./backend
         run: go build -v .
 
-      
-      - name: Run tests
-        run: go test -v ./...
-
-        # 7. Run backend tests
-      - name: Test backend
-        run: go test -v ./backend/...
-
       - name: Test backend
         working-directory: ./backend
         run: go test -v ./...
-
 
       - name: Run linter
         working-directory: ./frontend
