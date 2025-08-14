@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"    # expose frontend to host
+    depends_on:
+      - backend
+    environment:
+      BACKEND_DNS: backend
+      BACKEND_PORT: "9000"
+    networks:
+      - appnet
+
+  backend:
+    build: ./backend
+    ports:
+      - "9000:9000"    # expose backend inside docker
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
