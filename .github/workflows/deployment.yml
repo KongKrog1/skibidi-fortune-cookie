@@ -6,7 +6,7 @@ on:
 
 jobs:
   kubernetes:
-    # Avoid exposing secrets to PRs from forks
+    
     runs-on: ubuntu-latest
 
     steps:
@@ -21,11 +21,7 @@ jobs:
       - name: Write kubeconfig from secret
         run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
 
-      # ⬇️ Replace these with your real kubectl commands
       - name: Deploy manifests
         run: |
           kubectl --kubeconfig kubeconfig apply -f ./kubernetes/backend-deployment.yaml
           kubectl --kubeconfig kubeconfig apply -f ./kubernetes/frontend-deployment.yaml
-
-      - name: Verify rollout
-        run: kubectl --kubeconfig kubeconfig rollout status deploy/myapp --timeout=120s
