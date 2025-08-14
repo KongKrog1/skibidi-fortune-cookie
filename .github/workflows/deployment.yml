@@ -1,13 +1,16 @@
 name: deployment
 
 on:
+  workflow_dispatch:
+    
   push:
     branches: [ "main" ]
 
 jobs:
   kubernetes:
-    
     runs-on: ubuntu-latest
+    env:
+      NAMESPACE: student-10  
 
     steps:
       - name: Checkout
@@ -18,10 +21,24 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Write kubeconfig from secret
-        run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
-
+      - name: Write kubeconfig and export path
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > "${{ runner.temp }}/kubeconfig"
+          chmod 600 "${{ runner.temp }}/kubeconfig"
+          echo "KUBECONFIG=${{ runner.temp }}/kubeconfig" >> "$GITHUB_ENV"
+      - name: Sanity check cluster/context
+        run: |
+          kubectl config current-context
+          kubectl cluster-info
+      - name: Ensure namespace exists
+        run: |
+          kubectl get ns "$NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$NAMESPACE"
       - name: Deploy manifests
         run: |
-          kubectl --kubeconfig kubeconfig apply -f ./kubernetes/backend-deployment.yaml
-          kubectl --kubeconfig kubeconfig apply -f ./kubernetes/frontend-deployment.yaml
+          kubectl -n "$NAMESPACE" apply -f ./kubernetes/backend-deployment.yaml
+          kubectl -n "$NAMESPACE" apply -f ./kubernetes/frontend-deployment.yaml
+      - name: Verify rollout
+        run: |
+          kubectl -n "$NAMESPACE" get deployments
+          kubectl -n "$NAMESPACE" rollout status deploy/backend --timeout=180s
+          kubectl -n "$NAMESPACE" rollout status deploy/frontend --timeout=180s

@@ -18,7 +18,6 @@ spec:
           image: ghcr.io/kongkrog1/skibidi-fortune-cookie-backend:latest
           ports:
             - containerPort: 9000
-
 ---
 # Backend Service
 apiVersion: v1
@@ -32,6 +31,4 @@ spec:
     - protocol: TCP
       port: 9000
       targetPort: 9000
-  type: ClusterIP
-
-
+  type: NodePort
