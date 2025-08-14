@@ -43,13 +43,16 @@ jobs:
           kubectl -n "$NAMESPACE" rollout status deploy/backend --timeout=180s
           kubectl -n "$NAMESPACE" rollout status deploy/frontend --timeout=180s
   
-      - name: Smoke test (port-forward + curl)
-        env:
-          NAMESPACE: student-10   # or student-2
-          FRONTEND_SVC: frontend
-          BACKEND_SVC: backend
-          FRONT_LOCAL: 8080
-          BACK_LOCAL: 8081
+  smoke_test:
+    runs-on: ubuntu-latest
+    env:
+      NAMESPACE: student-10  
+      FRONTEND_SVC: frontend
+      BACKEND_SVC: backend
+      FRONT_LOCAL: 8080
+      BACK_LOCAL: 9000
+    steps:
+      - name: Smoke Test
         run: |
           set -euo pipefail
 
