@@ -41,35 +41,22 @@ jobs:
         working-directory: ./backend
         run: go build -v .
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    - name: Build frontend
-      run: |
-        cd ..
-        cd ..
-        cd /frontend
-        go build
+      
+      - name: Run tests
+        run: go test -v ./...
 
-      
-    - name: Build backend
-      run: |
-        cd ..
-        cd ..
-        cd /backend
-        go build
-      
-    - name: Run tests
-      run: go test -v ./...
-=======
->>>>>>> 3709a90 (cooked)
-=======
-      # 7. Run backend tests
+        # 7. Run backend tests
       - name: Test backend
         run: go test -v ./backend/...
->>>>>>> 3bcc3f2 (Update main.yml)
-=======
+
       - name: Test backend
         working-directory: ./backend
         run: go test -v ./...
->>>>>>> a19fa84 (Update main.yml)
+
+
+      - name: Run linter
+        working-directory: ./frontend
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+          ./bin/golangci-lint run
+

@@ -24,6 +24,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Scan backend image
+        run: trivy image ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-backend:latest
+
+      - name: Scan frontend image
+        run: trivy image ghcr.io/${{ env.OWNER }}/skibidi-fortune-cookie-frontend:latest
+
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
