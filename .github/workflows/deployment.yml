@@ -1,17 +1,17 @@
-name: deployment
+name: Deploy
 
 on:
   workflow_dispatch:
-    
   push:
     branches: [ "main" ]
 
-jobs:
-  kubernetes:
-    runs-on: ubuntu-latest
-    env:
-      NAMESPACE: student-10  
+env:
+  NAMESPACE: student-10
 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,39 +21,34 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Write kubeconfig and export path
+      - name: Configure kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > "${{ runner.temp }}/kubeconfig"
           chmod 600 "${{ runner.temp }}/kubeconfig"
           echo "KUBECONFIG=${{ runner.temp }}/kubeconfig" >> "$GITHUB_ENV"
-      - name: Sanity check cluster/context
-        run: |
-          kubectl config current-context
-          kubectl cluster-info
+
       - name: Ensure namespace exists
         run: |
           kubectl get ns "$NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$NAMESPACE"
-      - name: Deploy manifests
+
+      - name: Deploy application
         run: |
           kubectl -n "$NAMESPACE" apply -f ./kubernetes/redis-deployment.yaml
           kubectl -n "$NAMESPACE" apply -f ./kubernetes/backend-deployment.yaml
           kubectl -n "$NAMESPACE" apply -f ./kubernetes/frontend-deployment.yaml
-      - name: Verify rollout
+
+      - name: Wait for deployment
         run: |
-          kubectl -n "$NAMESPACE" get deployments
-          kubectl -n "$NAMESPACE" rollout status deploy/redis --timeout=180s
-          kubectl -n "$NAMESPACE" rollout status deploy/backend --timeout=180s
-          kubectl -n "$NAMESPACE" rollout status deploy/frontend --timeout=180s
-  smoke_test:
+          kubectl -n "$NAMESPACE" rollout status deploy/redis --timeout=300s
+          kubectl -n "$NAMESPACE" rollout status deploy/backend --timeout=300s
+          kubectl -n "$NAMESPACE" rollout status deploy/frontend --timeout=300s
+
+  test:
     runs-on: ubuntu-latest
-    env:
-      NAMESPACE: student-10
-      FRONTEND_SVC: frontend
-      BACKEND_SVC: backend
-      FRONT_LOCAL: 8080
-      BACK_LOCAL: 9000
+    needs: deploy
+    
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure kubeconfig
@@ -61,27 +56,8 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
 
-      - name: Smoke Test
-        run: |
-          set -euo pipefail
+      - name: Make test script executable
+        run: chmod +x ./test-app.sh
 
-          FRONT_PORT=$(kubectl -n "$NAMESPACE" get svc "$FRONTEND_SVC" -o jsonpath='{.spec.ports[0].port}')
-          BACK_PORT=$(kubectl -n "$NAMESPACE" get svc "$BACKEND_SVC" -o jsonpath='{.spec.ports[0].port}')
-
-          kubectl -n "$NAMESPACE" port-forward svc/"$FRONTEND_SVC" "$FRONT_LOCAL":"$FRONT_PORT" >/tmp/pf-frontend.log 2>&1 &
-          PF1=$!
-          kubectl -n "$NAMESPACE" port-forward svc/"$BACKEND_SVC" "$BACK_LOCAL":"$BACK_PORT" >/tmp/pf-backend.log 2>&1 &
-          PF2=$!
-
-          cleanup() { kill "$PF1" "$PF2" >/dev/null 2>&1 || true; }
-          trap cleanup EXIT
-
-          sleep 5 # give port-forward time to start
-
-          curl -fsS -m 10 "http://16.170.141.214:30901"
-
-          echo "Success: both endpoints reachable!"
-
-      - name: Stress test frontend
-        run: |
-          docker run --rm rufus/siege-engine siege -c25 -t30s http://16.170.141.214:30901
+      - name: Test application availability
+        run: ./test-app.sh "${{ env.NAMESPACE }}"
