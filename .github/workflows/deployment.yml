@@ -57,7 +57,7 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
 
       - name: Make test script executable
-        run: chmod +x ./test-app.sh
+        run: chmod +x ./testing/test-app.sh
 
       - name: Test application availability
-        run: ./test-app.sh "${{ env.NAMESPACE }}"
+        run: ./testing/test-app.sh "${{ env.NAMESPACE }}"
