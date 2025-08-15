@@ -13,13 +13,13 @@ spec:
       containers:
         - name: redis
           image: redis:8.2
-          args: ["--appendonly", "yes"]
           ports:
             - name: redis
               containerPort: 6379
           volumeMounts:
             - name: data
               mountPath: /data
+          resources: {}
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -30,6 +30,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: redis-data
 spec:
+  storageClassName: gp3
   accessModes: ["ReadWriteOnce"]
   resources:
     requests:
