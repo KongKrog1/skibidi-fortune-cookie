@@ -1,5 +1,5 @@
 # Multi-stage build for smaller image
-FROM golang:1.22 AS builder
+FROM golang:1.16 AS builder
 
 WORKDIR /app
 COPY . .

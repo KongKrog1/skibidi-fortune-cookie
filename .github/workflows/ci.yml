@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  test-frontend:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,10 +17,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.16"
 
-      # Frontend
-      - name: Download frontend dependencies
+      - name: Download dependencies
         working-directory: ./frontend
         run: go mod download
 
@@ -32,8 +31,23 @@ jobs:
         working-directory: ./frontend
         run: go test -v ./...
 
-      # Backend
-      - name: Download backend dependencies
+      - name: Run go vet
+        working-directory: ./frontend
+        run: go vet ./...
+
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.16"
+
+      - name: Download dependencies
         working-directory: ./backend
         run: go mod download
 
@@ -44,3 +58,22 @@ jobs:
       - name: Test backend
         working-directory: ./backend
         run: go test -v ./...
+
+      - name: Run go vet
+        working-directory: ./backend
+        run: go vet ./...
+
+  linting:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Super-Linter
+        uses: super-linter/super-linter/slim@v8
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_DOCKERFILE: true
+          VALIDATE_YAML: true
