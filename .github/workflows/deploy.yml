@@ -2,8 +2,10 @@ name: Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["Go CI"]
+    branches: ["main"]
+    types: [completed]
 
 env:
   NAMESPACE: student-10
